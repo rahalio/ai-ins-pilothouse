@@ -1,0 +1,800 @@
+openapi: 3.0.3
+info:
+  title: Pilothouse
+  version: 0.1.0
+  description: >-
+    Innovation portfolio system for incumbent insurers that ties every insurtech
+    pilot, partnership, and minority investment to the profit pool it defends or
+    attacks, and closes each bet on underwriting-grade evidence.
+  x-product-slug: ai-ins-pilothouse
+  x-source: ai-in-insurance/insurance_innovation_report_2016/
+servers:
+  - url: https://api.example.com
+tags:
+  - name: Pools
+  - name: Bets
+  - name: Clearance
+  - name: Partnerships
+  - name: Investments
+  - name: Outcomes
+  - name: Governance
+paths:
+  /v1/profit-pools:
+    get:
+      operationId: listProfitPools
+      tags: [Pools]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Profit pools
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeProfitPool"
+    post:
+      operationId: createProfitPool
+      tags: [Pools]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfitPoolCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeProfitPool"
+  /v1/profit-pools/{poolId}/threat-assessments:
+    parameters:
+      - $ref: "#/components/parameters/PoolId"
+    post:
+      operationId: createThreatAssessment
+      tags: [Pools]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ThreatAssessment"
+      responses:
+        "201":
+          description: Threat assessment recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeThreatAssessment"
+  /v1/bets:
+    get:
+      operationId: listInnovationBets
+      tags: [Bets]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [proposed, cleared, active, scaled, stopped, closed]
+      responses:
+        "200":
+          description: Innovation bets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeInnovationBet"
+    post:
+      operationId: createInnovationBet
+      tags: [Bets]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InnovationBetCreate"
+      responses:
+        "201":
+          description: Bet created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeInnovationBet"
+  /v1/bets/{betId}:
+    parameters:
+      - $ref: "#/components/parameters/BetId"
+    get:
+      operationId: getInnovationBet
+      tags: [Bets]
+      security: [{ BearerAuth: [] }]
+      responses:
+        "200":
+          description: Bet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeInnovationBet"
+  /v1/bets/{betId}/milestones:
+    parameters:
+      - $ref: "#/components/parameters/BetId"
+    post:
+      operationId: recordPilotMilestone
+      tags: [Bets]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PilotMilestone"
+      responses:
+        "201":
+          description: Milestone recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopePilotMilestone"
+  /v1/bets/{betId}/stop:
+    parameters:
+      - $ref: "#/components/parameters/BetId"
+    post:
+      operationId: stopInnovationBet
+      tags: [Bets]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StopDecision"
+      responses:
+        "200":
+          description: Bet stopped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeInnovationBet"
+  /v1/clearances:
+    get:
+      operationId: listRegulatoryClearances
+      tags: [Clearance]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Clearances
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeRegulatoryClearance"
+    post:
+      operationId: requestRegulatoryClearance
+      tags: [Clearance]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegulatoryClearanceCreate"
+      responses:
+        "201":
+          description: Clearance requested
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeRegulatoryClearance"
+  /v1/clearances/{clearanceId}/decision:
+    parameters:
+      - $ref: "#/components/parameters/ClearanceId"
+    post:
+      operationId: decideRegulatoryClearance
+      tags: [Clearance]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision, rationale]
+              properties:
+                decision:
+                  type: string
+                  enum: [approved, conditional, refused]
+                rationale:
+                  type: string
+                conditions:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Clearance decided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeRegulatoryClearance"
+  /v1/partnerships:
+    get:
+      operationId: listPartnerships
+      tags: [Partnerships]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Partnerships
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopePartnershipTerms"
+    post:
+      operationId: createPartnership
+      tags: [Partnerships]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnershipTerms"
+      responses:
+        "201":
+          description: Partnership registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopePartnershipTerms"
+  /v1/investments:
+    get:
+      operationId: listInvestmentPositions
+      tags: [Investments]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Investment positions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeInvestmentPosition"
+    post:
+      operationId: createInvestmentPosition
+      tags: [Investments]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvestmentPosition"
+      responses:
+        "201":
+          description: Position created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeInvestmentPosition"
+  /v1/outcomes:
+    get:
+      operationId: listOutcomeCloses
+      tags: [Outcomes]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Outcome closes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeOutcomeClose"
+  /v1/bets/{betId}/outcome-close:
+    parameters:
+      - $ref: "#/components/parameters/BetId"
+    post:
+      operationId: closeBetOnEvidence
+      tags: [Outcomes]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OutcomeClose"
+      responses:
+        "201":
+          description: Outcome closed on ratio evidence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeOutcomeClose"
+  /v1/bets/{betId}/scale-up:
+    parameters:
+      - $ref: "#/components/parameters/BetId"
+    post:
+      operationId: decideScaleUp
+      tags: [Outcomes]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScaleUpDecision"
+      responses:
+        "200":
+          description: Scale-up decision recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeScaleUpDecision"
+  /v1/governance/committee-reports:
+    get:
+      operationId: listCommitteeReports
+      tags: [Governance]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Committee reports
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeCommitteeReport"
+    post:
+      operationId: publishCommitteeReport
+      tags: [Governance]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommitteeReport"
+      responses:
+        "201":
+          description: Report published
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeCommitteeReport"
+  /v1/governance/spend-commitments:
+    post:
+      operationId: recordSpendCommitment
+      tags: [Governance]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpendCommitment"
+      responses:
+        "201":
+          description: Spend commitment recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeSpendCommitment"
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+    PoolId:
+      name: poolId
+      in: path
+      required: true
+      schema: { type: string }
+    BetId:
+      name: betId
+      in: path
+      required: true
+      schema: { type: string }
+    ClearanceId:
+      name: clearanceId
+      in: path
+      required: true
+      schema: { type: string }
+  schemas:
+    ResponseMeta:
+      type: object
+      required: [requestId, timestamp]
+      properties:
+        requestId: { type: string }
+        timestamp: { type: string, format: date-time }
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+    Money:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount: { type: number, format: double }
+        currency: { type: string }
+    ProfitPool:
+      type: object
+      required: [id, name, lineOfBusiness, gwp]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        lineOfBusiness:
+          type: string
+          enum: [motor, property, life, health, specialty, reinsurance]
+        gwp:
+          $ref: "#/components/schemas/Money"
+        threatenedShare:
+          type: number
+          format: float
+    ProfitPoolCreate:
+      type: object
+      required: [name, lineOfBusiness, gwp]
+      properties:
+        name: { type: string }
+        lineOfBusiness:
+          type: string
+          enum: [motor, property, life, health, specialty, reinsurance]
+        gwp:
+          $ref: "#/components/schemas/Money"
+    ThreatAssessment:
+      type: object
+      required: [poolId, attackVector, severity]
+      properties:
+        id: { type: string }
+        poolId: { type: string }
+        attackVector:
+          type: string
+          enum: [telematics, connected_home, wearables, on_demand, peer_to_peer, drones, blockchain, ai_automation, autonomous_vehicles]
+        severity:
+          type: string
+          enum: [watch, material, existential]
+        evidenceSummary: { type: string }
+        assessedAt: { type: string, format: date-time }
+    InnovationBet:
+      type: object
+      required: [id, poolId, instrument, horizon, status]
+      properties:
+        id: { type: string }
+        poolId: { type: string }
+        name: { type: string }
+        instrument:
+          type: string
+          enum: [pilot, partnership, minority_investment, acquisition, accelerator]
+        horizon:
+          type: string
+          enum: [near, medium, structural]
+        status:
+          type: string
+          enum: [proposed, cleared, active, scaled, stopped, closed]
+        sponsorId: { type: string }
+        counterpartyId: { type: string }
+    InnovationBetCreate:
+      type: object
+      required: [poolId, name, instrument, horizon]
+      properties:
+        poolId: { type: string }
+        name: { type: string }
+        instrument:
+          type: string
+          enum: [pilot, partnership, minority_investment, acquisition, accelerator]
+        horizon:
+          type: string
+          enum: [near, medium, structural]
+        sponsorId: { type: string }
+        counterpartyId: { type: string }
+        evidenceDefinition:
+          $ref: "#/components/schemas/EvidenceDefinition"
+    PilotMilestone:
+      type: object
+      required: [betId, name, dueAt]
+      properties:
+        id: { type: string }
+        betId: { type: string }
+        name: { type: string }
+        dueAt: { type: string, format: date-time }
+        completedAt: { type: string, format: date-time }
+        status:
+          type: string
+          enum: [planned, met, missed, waived]
+    StopDecision:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string }
+        decidedBy: { type: string }
+    RegulatoryClearance:
+      type: object
+      required: [id, betId, jurisdiction, status]
+      properties:
+        id: { type: string }
+        betId: { type: string }
+        jurisdiction: { type: string }
+        behaviour:
+          type: string
+          enum: [pricing, claims, underwriting, distribution, data_sharing, aviation]
+        status:
+          type: string
+          enum: [requested, approved, conditional, refused]
+        conditions:
+          type: array
+          items: { type: string }
+    RegulatoryClearanceCreate:
+      type: object
+      required: [betId, jurisdiction, behaviour]
+      properties:
+        betId: { type: string }
+        jurisdiction: { type: string }
+        behaviour:
+          type: string
+          enum: [pricing, claims, underwriting, distribution, data_sharing, aviation]
+        rationale: { type: string }
+    PartnershipTerms:
+      type: object
+      required: [betId, counterpartyId]
+      properties:
+        id: { type: string }
+        betId: { type: string }
+        counterpartyId: { type: string }
+        dataSharingTerms: { type: string }
+        outsourcingPerimeter: { type: string }
+        channelConflictAssessment: { type: string }
+    InvestmentPosition:
+      type: object
+      required: [betId, instrumentAmount]
+      properties:
+        id: { type: string }
+        betId: { type: string }
+        instrumentAmount:
+          $ref: "#/components/schemas/Money"
+        ownershipPercent: { type: number, format: float }
+        financialReturnSeparateFromStrategic: { type: boolean }
+    EvidenceDefinition:
+      type: object
+      properties:
+        lossRatioTargetPoints: { type: number, format: float }
+        expenseRatioTargetPoints: { type: number, format: float }
+        persistencyTargetPoints: { type: number, format: float }
+        measurementWindowMonths: { type: integer }
+        baselineLocked: { type: boolean }
+    OutcomeClose:
+      type: object
+      required: [betId, ratioMovement]
+      properties:
+        id: { type: string }
+        betId: { type: string }
+        ratioMovement:
+          $ref: "#/components/schemas/RatioMovement"
+        financeAttestedBy: { type: string }
+        closedAt: { type: string, format: date-time }
+    RatioMovement:
+      type: object
+      properties:
+        lossRatioPoints: { type: number, format: float }
+        expenseRatioPoints: { type: number, format: float }
+        persistencyPoints: { type: number, format: float }
+        againstBaselineId: { type: string }
+    ScaleUpDecision:
+      type: object
+      required: [betId, decision]
+      properties:
+        id: { type: string }
+        betId: { type: string }
+        decision:
+          type: string
+          enum: [scale, extend_pilot, stop]
+        operatingModelImpact: { type: string }
+        exposureImpact: { type: string }
+    SpendCommitment:
+      type: object
+      required: [betId, amount]
+      properties:
+        id: { type: string }
+        betId: { type: string }
+        amount:
+          $ref: "#/components/schemas/Money"
+        envelope: { type: string }
+        approvedBy: { type: string }
+    CommitteeReport:
+      type: object
+      required: [period, summary]
+      properties:
+        id: { type: string }
+        period: { type: string }
+        summary: { type: string }
+        activeBets: { type: integer }
+        poolsThreatened: { type: integer }
+        ratioMovementsAttested: { type: integer }
+    DataEnvelopeProfitPool:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/ProfitPool" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopeThreatAssessment:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/ThreatAssessment" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopeInnovationBet:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/InnovationBet" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopePilotMilestone:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/PilotMilestone" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopeRegulatoryClearance:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/RegulatoryClearance" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopePartnershipTerms:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/PartnershipTerms" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopeInvestmentPosition:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/InvestmentPosition" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopeOutcomeClose:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/OutcomeClose" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopeScaleUpDecision:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/ScaleUpDecision" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopeSpendCommitment:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/SpendCommitment" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopeCommitteeReport:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/CommitteeReport" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeProfitPool:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/ProfitPool" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeInnovationBet:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/InnovationBet" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeRegulatoryClearance:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/RegulatoryClearance" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopePartnershipTerms:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/PartnershipTerms" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeInvestmentPosition:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/InvestmentPosition" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeOutcomeClose:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/OutcomeClose" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeCommitteeReport:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/CommitteeReport" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
